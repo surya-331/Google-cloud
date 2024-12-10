@@ -1,0 +1,3 @@
+Select @@version
+
+Select * from employee;
