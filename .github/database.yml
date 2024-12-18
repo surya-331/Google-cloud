@@ -1,30 +1,30 @@
 name: Execute SQL Script
- 
+
 on:
   push:
     branches:
       - main
   workflow_dispatch: # Allow manual triggering
- 
+
 jobs:
   execute-sql:
     runs-on: ubuntu-latest
- 
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
- 
+
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
-        version: "latest" # Set the latest version
+        version: "latest"
         project_id: plasma-renderer-443609-p8
- 
+
     - name: Authenticate with Google Cloud
-      uses: google-github-actions/auth@v0
+      uses: google-github-actions/auth@v1
       with:
-        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
- 
+        credentials_json: ${{ secrets.NEW_GCLOUD_SERVICE_KEY }}
+
     - name: Install SQLCMD
       run: |
         sudo apt-get update
@@ -32,7 +32,7 @@ jobs:
         echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
         source ~/.bashrc
 
-        - name: Backup Cloud SQL Instance
+    - name: Backup Cloud SQL Instance
       run: |
         echo "Starting Cloud SQL instance backup..."
         BACKUP_surya="backup_$(date +'%Y%m%d%H%M%S')"
@@ -40,17 +40,7 @@ jobs:
           --instance=cloudsql \
           --description="Automated backup: $BACKUP_surya"
         echo "Backup completed with name: $BACKUP_surya"
-
-    - name: Download Backup
-      run: |
-        echo "Downloading backup..."
-        BACKUP_PATH="./backups/$BACKUP_surya"
-        mkdir -p $BACKUP_PATH
-        gcloud sql export sql \
-          your-cloudsql \
-          gs://kadali/backups/$BACKUP_surya.sql \
-          --database=surya
-        echo "Backup stored at: gs://kadali/backups/$BACKUP_surya.sql"
+        echo "BACKUP_NAME=$BACKUP_surya" >> $GITHUB_ENV
  
     - name: Execute SQL Script
       run: |
