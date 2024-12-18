@@ -1,0 +1,48 @@
+# YML script for taking full backup of 'test' database on MSSQL Google Cloud SQL instance
+
+name: Backup MSSQL Database
+
+on:
+  # Schedule the job to run daily at 03:30 UTC (09:00 IST)
+  schedule:
+    - cron: "30 3 * * *"
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  backup-database:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Google Cloud SDK
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        version: "latest" # Use the latest version
+        project_id: plasma-renderer-443609-p8 # Replace with your GCP project ID
+
+    # Step 3: Authenticate with Google Cloud
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+
+    # Step 4: Export SQL backup to Google Cloud Storage
+    - name: Export Backup to Google Cloud Storage
+      run: |
+        echo "Starting backup process..."
+        BACKUP_NAME="surya_db_backup_$(date +'%Y%m%d%H%M%S').bak"
+        gcloud sql export sql cloudsql \
+          gs://kadali/localbackup/$BACKUP_NAME \
+          --database=surya
+        echo "Backup completed: gs://kadali/localbackup/$BACKUP_NAME"
+
+    # Step 5: Verify the backup file in GCS (Optional)
+    - name: Verify Backup in GCS
+      run: |
+        echo "Verifying backup file..."
+        gsutil ls gs://kadali/localbackup/
