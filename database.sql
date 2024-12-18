@@ -1,3 +1,5 @@
 --Create database BuildCTB;
 
-drop DATABASE DXCTech;
+drop DATABASE BuildCTB;
+
+drop DATABASE adventure;
