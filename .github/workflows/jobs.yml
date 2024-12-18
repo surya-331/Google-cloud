@@ -1,4 +1,4 @@
-# YML script for taking full backup of 'test' database on MSSQL Google Cloud SQL instance
+# YML script for taking a full backup of 'test' database on MSSQL Google Cloud SQL instance
 
 name: Backup MSSQL Database
 
@@ -31,18 +31,17 @@ jobs:
       with:
         credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
 
-    # Step 4: Export SQL backup to Google Cloud Storage
-    - name: Export Backup to Google Cloud Storage
+    # Step 4: Create a SQL Server backup file using SQLCMD
+    - name: Backup Database
       run: |
-        echo "Starting backup process..."
+        echo "Starting database backup..."
         BACKUP_NAME="surya_db_backup_$(date +'%Y%m%d%H%M%S').bak"
-        gcloud sql export sql cloudsql \
-          gs://kadali/localbackup/$BACKUP_NAME \
-          --database=surya
-        echo "Backup completed: gs://kadali/localbackup/$BACKUP_NAME"
+        sqlcmd -S tcp:34.131.69.65,1433 -U sqlserver -P ${{ secrets.CLOUD_SQL_PASSWORD }} -Q "BACKUP DATABASE [surya] TO DISK = N'/tmp/$BACKUP_NAME' WITH INIT, COMPRESSION"
+        echo "Backup created at /tmp/$BACKUP_NAME"
 
-    # Step 5: Verify the backup file in GCS (Optional)
-    - name: Verify Backup in GCS
+    # Step 5: Upload the backup to Google Cloud Storage
+    - name: Upload Backup to Google Cloud Storage
       run: |
-        echo "Verifying backup file..."
-        gsutil ls gs://kadali/localbackup/
+        echo "Uploading backup to Google Cloud Storage..."
+        gsutil cp /tmp/$BACKUP_NAME gs://kadali/localbackup/$BACKUP_NAME
+        echo "Backup uploaded to gs://kadali/localbackup/$BACKUP_NAME"
