@@ -36,7 +36,7 @@ jobs:
       run: |
         echo "Starting database backup..."
         BACKUP_NAME="surya_db_backup_$(date +'%Y%m%d%H%M%S').bak"
-        sqlcmd -S tcp:34.131.69.65,1433 -U sqlserver -P ${{ secrets.CLOUD_SQL_PASSWORD }} -Q "BACKUP DATABASE [surya] TO DISK = N'/tmp/$BACKUP_NAME' WITH INIT, COMPRESSION"
+        sqlcmd -S tcp:34.131.69.65,1433 -U ${sqlserver} -P ${Realme@3312} -Q "BACKUP DATABASE [surya] TO DISK = N'/tmp/$BACKUP_NAME' WITH INIT, COMPRESSION"
         echo "Backup created at /tmp/$BACKUP_NAME"
 
     # Step 5: Upload the backup to Google Cloud Storage
