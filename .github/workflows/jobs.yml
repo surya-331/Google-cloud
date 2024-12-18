@@ -1,11 +1,9 @@
-# YML script for taking a full backup of 'test' database on MSSQL Google Cloud SQL instance
-
 name: Backup MSSQL Database
 
 on:
   # Schedule the job to run daily at 03:30 UTC (09:00 IST)
   schedule:
-    - cron: "30 3 * * *"
+    - cron: "30 3 * * *"  # 03:30 UTC is 09:00 IST
   # Allow manual triggering
   workflow_dispatch:
 
@@ -29,19 +27,31 @@ jobs:
     - name: Authenticate with Google Cloud
       uses: google-github-actions/auth@v1
       with:
-        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}  # Use your GCP service account key
 
-    # Step 4: Create a SQL Server backup file using SQLCMD
-    - name: Backup Database
+    # Step 4: Export SQL backup to Google Cloud Storage
+    - name: Backup Database to Google Cloud Storage
       run: |
         echo "Starting database backup..."
         BACKUP_NAME="surya_db_backup_$(date +'%Y%m%d%H%M%S').bak"
-        sqlcmd -S tcp:34.131.69.65,1433 -U ${sqlserver} -P ${Realme@3312} -Q "BACKUP DATABASE [surya] TO DISK = N'/tmp/$BACKUP_NAME' WITH INIT, COMPRESSION"
+        
+        # Set the environment variables for SQL Server credentials
+        echo "Backing up database to GCS..."
+        sqlcmd -S tcp:34.131.69.65,1433 -U ${SQL_USERNAME} -P ${SQL_PASSWORD} -Q "BACKUP DATABASE [surya] TO DISK = N'/tmp/$BACKUP_NAME' WITH INIT, COMPRESSION"
+        
         echo "Backup created at /tmp/$BACKUP_NAME"
-
-    # Step 5: Upload the backup to Google Cloud Storage
-    - name: Upload Backup to Google Cloud Storage
-      run: |
-        echo "Uploading backup to Google Cloud Storage..."
+        
+        # Now upload the backup to Google Cloud Storage
         gsutil cp /tmp/$BACKUP_NAME gs://kadali/localbackup/$BACKUP_NAME
         echo "Backup uploaded to gs://kadali/localbackup/$BACKUP_NAME"
+
+    # Step 5: Verify the backup file in GCS (Optional)
+    - name: Verify Backup in GCS
+      run: |
+        echo "Verifying backup file in Google Cloud Storage..."
+        gsutil ls gs://kadali/localbackup/
+        
+  env:
+    # Set the SQL username and password as environment variables
+    SQL_USERNAME: "sqlserver"  # Replace with your SQL Server username
+    SQL_PASSWORD: ${{ secrets.CLOUD_SQL_PASSWORD }}  # Ensure that this secret is stored in GitHub Secrets
