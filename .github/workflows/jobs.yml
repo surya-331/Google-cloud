@@ -20,8 +20,8 @@ jobs:
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
-        version: "latest" # Use the latest version
-        project_id: plasma-renderer-443609-p8 # Replace with your GCP project ID
+        version: "latest"  # Use the latest version of gcloud
+        project_id: plasma-renderer-443609-p8  # Replace with your GCP project ID
 
     # Step 3: Authenticate with Google Cloud
     - name: Authenticate with Google Cloud
@@ -29,19 +29,18 @@ jobs:
       with:
         credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}  # Use your GCP service account key
 
-    # Step 4: Export SQL backup to Google Cloud Storage
+    # Step 4: Backup SQL Server Database
     - name: Backup Database to Google Cloud Storage
       run: |
         echo "Starting database backup..."
         BACKUP_NAME="surya_db_backup_$(date +'%Y%m%d%H%M%S').bak"
         
-        # Set the environment variables for SQL Server credentials
-        echo "Backing up database to GCS..."
+        # Use sqlcmd to perform the backup on the SQL Server instance
         sqlcmd -S tcp:34.131.69.65,1433 -U ${SQL_USERNAME} -P ${SQL_PASSWORD} -Q "BACKUP DATABASE [surya] TO DISK = N'/tmp/$BACKUP_NAME' WITH INIT, COMPRESSION"
         
         echo "Backup created at /tmp/$BACKUP_NAME"
         
-        # Now upload the backup to Google Cloud Storage
+        # Upload the backup file to Google Cloud Storage
         gsutil cp /tmp/$BACKUP_NAME gs://kadali/localbackup/$BACKUP_NAME
         echo "Backup uploaded to gs://kadali/localbackup/$BACKUP_NAME"
 
