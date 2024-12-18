@@ -42,17 +42,6 @@ jobs:
         echo "Backup completed with name: $BACKUP_surya"
         echo "BACKUP_NAME=$BACKUP_surya" >> $GITHUB_ENV
 
-    - name: Download Backup
-      run: |
-        echo "Downloading backup..."
-        BACKUP_PATH="./backups/${{ env.BACKUP_NAME }}"
-        mkdir -p $BACKUP_PATH
-        gcloud sql export sql \
-          --instance=your-cloudsql-instance-name \
-          gs://your-cloud-storage-bucket/backups/${{ env.BACKUP_NAME }}.sql \
-          --database=surya
-        echo "Backup stored at: gs://your-cloud-storage-bucket/backups/${{ env.BACKUP_NAME }}.sql"
- 
     - name: Execute SQL Script
       run: |
         echo "Executing SQL script..."
