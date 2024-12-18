@@ -37,7 +37,7 @@ jobs:
         echo "Starting Cloud SQL instance backup..."
         BACKUP_surya="backup_$(date +'%Y%m%d%H%M%S')"
         gcloud sql backups create \
-          --instance=your-cloudsql-instance-name \
+          --instance=cloudsql \
           --description="Automated backup: $BACKUP_surya"
         echo "Backup completed with name: $BACKUP_surya"
         echo "BACKUP_NAME=$BACKUP_surya" >> $GITHUB_ENV
