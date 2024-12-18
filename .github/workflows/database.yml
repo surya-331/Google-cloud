@@ -3,7 +3,7 @@ name: Execute SQL Script
 # on:
   # push:
    # branches:
-      - main
+    #  - main
   workflow_dispatch: # Allow manual triggering
 
 jobs:
