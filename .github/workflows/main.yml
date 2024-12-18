@@ -23,7 +23,8 @@ jobs:
     - name: Authenticate with Google Cloud
       uses: google-github-actions/auth@v0
       with:
-        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+    credentials_json: ${{ secrets.NEW_GCLOUD_SERVICE_KEY }}
+
  
     - name: Install SQLCMD
       run: |
