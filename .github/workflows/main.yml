@@ -1,0 +1,38 @@
+name: Execute SQL Script
+ 
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual triggering
+ 
+jobs:
+  execute-sql:
+    runs-on: ubuntu-latest
+ 
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+ 
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        version: "latest" # Set the latest version
+        project_id: plasma-renderer-443609-p8
+ 
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+ 
+    - name: Install SQLCMD
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mssql-tools unixodbc-dev
+        echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+        source ~/.bashrc
+ 
+    - name: Execute SQL Script
+      run: |
+        echo "Executing SQL script..."
+        sqlcmd -S tcp:34.173.231.83,1433 -U sqlserver -P ${{ secrets.CLOUD_SQL_PASSWORD }} -i ./database.sql
